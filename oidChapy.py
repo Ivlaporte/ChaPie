@@ -1,19 +1,20 @@
+# 19 avril 2020: debugger Ajouter
 # oidChapie
 # application python qui gè le CRUD des clefs de l'usager
-# Créé le 14 avril 2020
-# Révisé le: 15 avril 2020
 #
-# Les révisions sont faites dans le fichier \Users\Utilisateur\Progge\ChaPie\oidChapie.py
-# Une copie dans F:\copiesSurEffeDeuPoin\oidChapie.py
+# Créé le: 14 mars 2020
+# Chapy 1.2
+# Révisé le: 22 avril 2020
 
 import tkinter as tk
 from tkinter import *
 import tkinter.scrolledtext as tkst
+from tkinter import ttk
 import re
 import sqlite3
-from tkinter import ttk
+import time
 
-global print_enregistrements
+#all variables are global
 global nom_site_color
 global nom_site_txt
 global ur_l_txt
@@ -36,50 +37,59 @@ global lbl_non_utili
 global query_lst
 global query_info
 global delete_box_txt
-# global o_i_d
 global total_index
 global v_nom_utili
 global n_utili
 global n_ta_ble
 
+#main window
 root = tk.Tk()
-
 root.title("Chapie perso")
-root.geometry("1150x570")
+root.geometry("1650x570")
 
 v_nom_utili = StringVar()
 query_info = tk.StringVar()
 
-
 def fenet_aid_fr():
-    root.geometry("1150x810")
-    aide_info = "Lors de la première utilisation de l\'application ChaPy," \
+    #window opened from "Aide menu"
+    fenetaid = tk.Tk()
+    fenetaid.geometry("600x100")
+    container = ttk.Frame(fenetaid)
+    canvas = Canvas(container)
+    scrollebar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+    scFram = ttk.Frame(canvas)
+    scFram.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    canvas.create_window((0, 0), window=scFram, anchor='nw')
+    canvas.configure(yscrollcommand=scrollebar.set)
+    aide_info = "Application de conservation des informations, Chapy 1.2 " \
+                "Lors de la première utilisation de l\'application ChaPy," \
                 "\ndeux nouveaux fichiers ont été créés dans le même répertoire que l\'application:" \
                 "\nsites_chapy.db et archiv_chapy.txt." \
-                "\nCes fichiers doivent être laissés en place enregistrés inclus avec vos mises à jour" \
+                "\nCes fichiers doivent rester dans le même dossier que oidChapy.py et être enregistrés avec vos mises à jour" \
                 "\n\nPour ajouter un enregistrement, inscrire les informations dans les champs de votre choix" \
-                "\n(le champ URL est obligatoire)" \
+                "\n(le champ URL est obligatoire) " \
                 "et cliquer sur \"Ajouter aux sites\". " \
                 "Ceci ajoute les données dans une table du fichier \"sites_chapy.db\"" \
                 "\n\nPour chercher les informations, cliquer sur \"Recherche\", ou précisez des éléments de recherche" \
                 "\ndans le champ \"URL\", ou \"Courriel\" ou \"Clé primaire\"" \
                 "\n\nPour effacer un enregistrement, écrire le nom exact de l\'\"URL\" dans le champ correspondant" \
-                "\net cliquer sur \"Archiver\". Les informations sont toutes conservées dans le fichier archiv_chapy.txt"
-    lbl_aide = Label(root, bg="white")
+                "\net cliquer sur \"Archiver\". Les informations sont toutes conservées dans le fichier \"archiv_chapy.txt\""
+    lbl_aide = Label(scFram, bg="white")
     lbl_aide.config(text=aide_info, justify=LEFT)
-    lbl_aide.grid(row=20, column=0, columnspan=4, sticky=W + E)
-
-    # placer_lbl(query_info)
-
-
+    lbl_aide.pack()
+    container.pack()
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollebar.pack(side="right", fill="y")
+    fenetaid.mainloop()
 chapiConn = sqlite3.connect("sites_chapy.db")
 c = chapiConn.cursor()
-c.execute("""CREATE TABLE IF NOT EXISTS sites_oid_chapi(
-        nom_site            TEXT,
-        ur_l                TEXT    NOT NULL,
+c.execute("""CREATE TABLE IF NOT EXISTS sites_uniqurl_chapi(
+        nom_site            TEXT UNIQUE,
+        ur_l                TEXT UNIQUE NOT NULL,
         nom_utilisateur     TEXT,
         cour_riel           TEXT,
         cle_f               TEXT,
+        cle_f_deude         TEXT,
         q_1                 TEXT,
         r_1                 TEXT,
         q_2                 TEXT,
@@ -116,16 +126,14 @@ def prendrelenomparlapoinpoin():
         if re.search(r'[\w\-. ]', ese):
             return TRUE
         else:
-            # lbl_no = Label(n_tabl, text="Pas ce caractère...", bg="yellow")
             lbl_no.grid_forget()
             query_lst.grid_forget()
             lbl_no.grid(row=0, column=2)
             return FALSE
-
+    #window opened from "Fichier" menu
     n_tabl = tk.Tk()
     n_tabl.title("Accueil")
     n_tabl.geometry("330x100")
-    # nom_nouvel_utili = tk.StringVar()
     texte_lbl_n = tk.StringVar()
     texte_lbl_n = "Inscrire votre nom (lettres, chiffres, \"-\", \".\" ou espaces)"
 
@@ -144,7 +152,7 @@ def prendrelenomparlapoinpoin():
 def placer_lbl(queri_info):
     lbl_non_utili.config(text=queri_info, justify=LEFT)
     # root.geometry("1200x570")
-    lbl_non_utili.grid(row=18, column=1, columnspan=4, sticky=W+E)
+    lbl_non_utili.grid(row=18, column=1, columnspan=4, sticky=W + E)
 
 
 def placer_lbl_ed(queri_info):
@@ -154,6 +162,7 @@ def placer_lbl_ed(queri_info):
 
 
 def comand_quitter():
+    #window opened from "Fichier" menu
     quiter_peutetre = tk.Tk()
     quiter_peutetre.title("")
     quiter_peutetre.config(bg="lightpink")
@@ -162,14 +171,18 @@ def comand_quitter():
     def go_quit():
         quiter_peutetre.destroy()
         root.destroy()
+    def go_annuler():
+        quiter_peutetre.destroy()
 
     lbl_quitter = tk.Label(quiter_peutetre, text='Voulez-vous arrêter le programme?'
                                                  '\nToutes les ajouts et modifications ont déjà été inscrits dans la base de données'
                                                  '\nlorsque vous avez appuyé sur le bouton"Ajouter à la base de donnée\" ou \"MAJ\"')
     lbl_quitter.config(bg="lightpink", justify=LEFT)
-    lbl_quitter.pack()
+    lbl_quitter.grid(row=0, column=0, columnspan=2)
     cmd_quitter = tk.Button(quiter_peutetre, text="Quitter", command=go_quit)
-    cmd_quitter.pack()
+    cmd_quitter.grid(row=1, column=0)
+    cmd_annuler = tk.Button(quiter_peutetre, text="Annuler", command=go_annuler)
+    cmd_annuler.grid(row=1, column=1)
 
 
 menubar = tk.Menu(root)
@@ -188,24 +201,22 @@ chapiConn = sqlite3.connect("sites_chapy.db")
 c = chapiConn.cursor()
 
 
-# <!------- ceci est le modelle de conditions
 def submit():
-    if ur_l_txt.get() != "" or delete_box_txt.get() == "":
+    if ur_l_txt.get() != "":
         ur_l_txt.config(bg="white")
-        # cour_riel_txt.config(bg="pink")
-        if re.search(r'\w*\.?\w*\.?\w*\.?\w*\.[a-zA-Z]+$', ur_l_txt.get()) and re.search('[^@,]', ur_l_txt.get()):
+        # delete_box_txt.config(bg="white")
+        if re.search(r'\w*\.?\w*\.?\w*\.?\w*\.[a-zA-Z]+/?$', ur_l_txt.get()) and re.search('[^@,]', ur_l_txt.get()):
             ur_l_txt.config(bg="white")
             if re.search(r'\w+@\w+\.\w+$', cour_riel_txt.get()) or cour_riel_txt.get() == "":
                 inserer_chapy()
-                info_confirmation = "Enregistrement de {} complété.".format(ur_l_txt.get())
-                placer_lbl(info_confirmation)
                 vider_champs()
             else:
                 query_info = "Pour soumettre un courriel avec le site, le champ doit comprendre\n" \
                              " un caractère alpha-numériques ou plus,\n" \
-                             "un \"@\") et un \".\"."
+                             "un \"@\" et un \".\"."
                 placer_lbl(query_info)
                 cour_riel_txt.config(bg="pink")
+                # vider_champs()
         else:
             query_info = "Pour soumettre un nouveau site,\nle champ \"Url\" comporte un point \".\"" \
                          "\nsuivi de caractères alpha-numériques (sauf \"@\")."
@@ -220,66 +231,78 @@ def submit():
     if delete_box_txt.get() != "":
         query_info = "Les inscriptions du champ \"Clé primaire\" ne seront pas enregistrées"
         placer_lbl(query_info)
-
-    # chapiConn.commit()
-    # chapiConn.close()
+        vider_champs()
 
 
 def inserer_chapy():
     chapiConn = sqlite3.connect("sites_chapy.db")
     c = chapiConn.cursor()
-    # curle = c.fetchall()
-    c.execute(
-        "INSERT INTO sites_oid_chapi VALUES (:nom_site, :ur_l, :nom_utilisateur, :cour_riel, :cle_f, :q_1, :r_1, :q_2, :r_2, :q_3, :r_3, :q_4, :r_4, :q_5, :r_5, :no_te)",
-        {
-            'nom_site': nom_site_txt.get(),
-            'ur_l': ur_l_txt.get(),
-            'nom_utilisateur': nom_utilisateur_txt.get(),
-            'cour_riel': cour_riel_txt.get(),
-            'cle_f': cle_f_txt.get(),
-            'q_1': q_1_txt.get(),
-            'r_1': r_1_txt.get(),
-            'q_2': q_2_txt.get(),
-            'r_2': r_2_txt.get(),
-            'q_3': q_3_txt.get(),
-            'r_3': r_3_txt.get(),
-            'q_4': q_4_txt.get(),
-            'r_4': r_4_txt.get(),
-            'q_5': q_5_txt.get(),
-            'r_5': r_5_txt.get(),
-            'no_te': no_te_txt.get()
-        })
-    #             'o_i_d': o_i_d,
-    chapiConn.commit()
+    try:
+        c.execute(
+            "INSERT INTO sites_uniqurl_chapi VALUES (:nom_site, :ur_l, :nom_utilisateur, :cour_riel, :cle_f, :cle_f_deude, :q_1, :r_1, :q_2, :r_2, :q_3, :r_3, :q_4, :r_4, :q_5, :r_5, :no_te)",
+            {
+                'nom_site': nom_site_txt.get(),
+                'ur_l': ur_l_txt.get(),
+                'nom_utilisateur': nom_utilisateur_txt.get(),
+                'cour_riel': cour_riel_txt.get(),
+                'cle_f': cle_f_txt.get(),
+                'cle_f_deude': cle_f_deude_txt.get(),
+                'q_1': q_1_txt.get(),
+                'r_1': r_1_txt.get(),
+                'q_2': q_2_txt.get(),
+                'r_2': r_2_txt.get(),
+                'q_3': q_3_txt.get(),
+                'r_3': r_3_txt.get(),
+                'q_4': q_4_txt.get(),
+                'r_4': r_4_txt.get(),
+                'q_5': q_5_txt.get(),
+                'r_5': r_5_txt.get(),
+                'no_te': "Enregistrement créé le " + time.strftime("%d-%m-%Y") + "\n" + no_te_txt.get()
+            })
+        chapiConn.commit()
+        info_confirmation = "Enregistrement de {} complété.".format(ur_l_txt.get())
+        placer_lbl(info_confirmation)
+        vider_champs()
+    except sqlite3.Error as sqerr:
+        # print(sqerr)
+        errMess = "La valeur entrée dans l\'un des champs \"Nom du site\" ou \"URL\"" \
+                  "\nexiste déjà, elle doit être modifiée." \
+                  "\npour consulter les valeurs existantes, cliquez sur \"Recherche\""
+        placer_lbl(errMess)
+        nom_site_txt.config(bg="pink")
+        ur_l_txt.config(bg="pink")
     c.close()
     chapiConn.close()
-    # vider_champs()
 
 
 def edit():
     chapiConn = sqlite3.connect("sites_chapy.db")
     c = chapiConn.cursor()
     cee = chapiConn.cursor()
-    if delete_box_txt.get() != "":
-        c.execute("SELECT oid from sites_oid_chapi")
-        fetcher = c.fetchall()
-        num_delete = delete_box_txt.get()
-        lenne = int(delete_box_txt.get())
-        if lenne <= len(fetcher):  # c.fetchall()):
-            cee.execute("SELECT *, oid FROM sites_oid_chapi WHERE oid = '" + num_delete + "'")
-            batir_editTk(cee.fetchall())
-
-    elif ur_l_txt.get() != "":
-        c.execute("SELECT ur_l FROM sites_oid_chapi")
+    try:
+        ur_l_txt.config(bg="white")
+        c.execute("SELECT ur_l FROM sites_uniqurl_chapi")
         fetcher = c.fetchall()
         url_get = ur_l_txt.get()
         if (any(url_get in i for i in fetcher)):
-            cee.execute("SELECT *, oid FROM sites_oid_chapi WHERE ur_l = '" + url_get + "'")
+            # print("Batirre")
+            delete_box_txt.config(bg="white")
+            ur_l_txt.config(bg="white")
+            cee.execute("SELECT *, oid FROM sites_uniqurl_chapi WHERE ur_l = '" + url_get + "'")
             batir_editTk(cee.fetchall())
-    else:
-        chapiConn.close()
-        c.close()
-        return
+            vider_champs()
+        else:
+            errMess = "Une mise à jour signifie un changement effectué sur un enregistrement" \
+                      "\nVeuillez inscrire la valeur désirée dans le champ \"URL\"" \
+                      "\npour utiliser la commande \"Mise à jour\""
+            placer_lbl(errMess)
+            vider_champs()
+    except sqlite3.Error as esse:
+        errMess = "Une mise à jour signifie un changement effectué sur un enregistrement" \
+                  "\nVeuillez inscrire la valeur désirée dans le champ \"URL\"" \
+                  "\npour utiliser la commande \"Mise à jour\""
+        placer_lbl(errMess)
+        ur_l_txt.config(bg="pink")
 
 
 def batir_editTk(choi):  # choi = fetchall!!!
@@ -289,6 +312,7 @@ def batir_editTk(choi):  # choi = fetchall!!!
     global nom_utilisateur_editor
     global cour_riel_editor
     global cle_f_editor
+    global cle_f_deude_editor
     global q_1_editor
     global r_1_editor
     global q_2_editor
@@ -302,20 +326,10 @@ def batir_editTk(choi):  # choi = fetchall!!!
     global no_te_editor
     global delete_editor
     global lbl_non_utili_ed
+    #Opens a window for updating record ...crUd
     editor = tk.Tk()
     editor.title("Mise à jour de ...")
-    editor.geometry("830x380")
-    # conn = sqlite3.connect("sites_chapy.db")
-    # cee = conn.cursor()
-    # if delete_box_txt.get != "":
-    #     cee.execute("SELECT * FROM sites_oid_chapi WHERE oid = '" + delete_box_txt.get() + "'")
-    #
-    # elif ur_l_txt.get() != "":
-    #     cee.execute("SELECT * FROM sites_oid_chapi WHERE ur_l = '" + ur_l_txt.get() + "'")
-    # else:
-    #     return#
-    # enregistrements = cee.fetchall()
-    # enregistrements = choi
+    editor.geometry("600x420")
     nom_site_editor = tk.Entry(editor, width=50)
     nom_site_editor.grid(row=0, column=1)
     ur_l_editor = tk.Entry(editor, width=50)
@@ -326,6 +340,8 @@ def batir_editTk(choi):  # choi = fetchall!!!
     cour_riel_editor.grid(row=3, column=1)
     cle_f_editor = tk.Entry(editor, width=50)
     cle_f_editor.grid(row=4, column=1)
+    cle_f_deude_editor = tk.Entry(editor, width=50)
+    cle_f_deude_editor.grid(row=4, column=1)
     q_1_editor = tk.Entry(editor, width=50)
     q_1_editor.grid(row=5, column=1)
     r_1_editor = tk.Entry(editor, width=50)
@@ -353,99 +369,126 @@ def batir_editTk(choi):  # choi = fetchall!!!
 
     lbl_nom_site = tk.Label(editor, text=nom_site_v[0], width=30, anchor=tk.W)
     lbl_nom_site.grid(row=0, column=0)
-    lbl_ur_l = tk.Label(editor, text=nom_site_v[1], width=30, anchor=tk.W)
+    lbl_ur_l = tk.Label(editor, text=nom_site_v[1][:3], width=30, anchor=tk.W)
     lbl_ur_l.grid(row=1, column=0)
     lbl_nom_utilisateur = tk.Label(editor, text=nom_site_v[2], width=30, anchor=tk.W)
     lbl_nom_utilisateur.grid(row=2, column=0, sticky=tk.W)
-    lbl_cour_riel = tk.Label(editor, text=nom_site_v[3], width=30, anchor=tk.W)
+    lbl_cour_riel = tk.Label(editor, text=nom_site_v[3][:-13], width=30, anchor=tk.W)
     lbl_cour_riel.grid(row=3, column=0)
-    lbl_cle_f = tk.Label(editor, text=nom_site_v[4], width=30, anchor=tk.W)
+    lbl_cle_f = tk.Label(editor, text=nom_site_v[4][:16], width=30, anchor=tk.W)
     lbl_cle_f.grid(row=4, column=0)
-    lbl_q_1 = tk.Label(editor, text=nom_site_v[5], width=30, anchor=tk.W)
-    lbl_q_1.grid(row=5, column=0)
-    lbl_r_1 = tk.Label(editor, text=nom_site_v[6], width=30, anchor=tk.W)
-    lbl_r_1.grid(row=6, column=0)
-    lbl_q_2 = tk.Label(editor, text=nom_site_v[7], width=30, anchor=tk.W)
-    lbl_q_2.grid(row=7, column=0)
-    lbl_r_2 = tk.Label(editor, text=nom_site_v[8], width=30, anchor=tk.W)
-    lbl_r_2.grid(row=8, column=0)
-    lbl_q_3 = tk.Label(editor, text=nom_site_v[9], width=30, anchor=tk.W)
-    lbl_q_3.grid(row=9, column=0)
-    lbl_r_3 = tk.Label(editor, text=nom_site_v[10], width=30, anchor=tk.W)
-    lbl_r_3.grid(row=10, column=0)
-    lbl_q_4 = tk.Label(editor, text=nom_site_v[11], width=30, anchor=tk.W)
-    lbl_q_4.grid(row=11, column=0)
-    lbl_r_4 = tk.Label(editor, text=nom_site_v[12], width=30, anchor=tk.W)
-    lbl_r_4.grid(row=12, column=0)
-    lbl_q_5 = tk.Label(editor, text=nom_site_v[13], width=30, anchor=tk.W)
-    lbl_q_5.grid(row=13, column=0)
-    lbl_r_5 = tk.Label(editor, text=nom_site_v[14], width=30, anchor=tk.W)
-    lbl_r_5.grid(row=14, column=0)
-    lbl_no_te = tk.Label(editor, text=nom_site_v[15], width=30, anchor=tk.W)
+    lbl_cle_f_deude = tk.Label(editor, text=nom_site_v[5], width=30, anchor=tk.W)
+    lbl_cle_f_deude.grid(row=5, column=0)
+
+    lbl_q_1 = tk.Label(editor, text=nom_site_v[6], width=30, anchor=tk.W)
+    lbl_q_1.grid(row=6, column=0)
+    lbl_r_1 = tk.Label(editor, text=nom_site_v[7], width=30, anchor=tk.W)
+    lbl_r_1.grid(row=7, column=0)
+    lbl_q_2 = tk.Label(editor, text=nom_site_v[8], width=30, anchor=tk.W)
+    lbl_q_2.grid(row=8, column=0)
+    lbl_r_2 = tk.Label(editor, text=nom_site_v[9], width=30, anchor=tk.W)
+    lbl_r_2.grid(row=9, column=0)
+    lbl_q_3 = tk.Label(editor, text=nom_site_v[10], width=30, anchor=tk.W)
+    lbl_q_3.grid(row=10, column=0)
+    lbl_r_3 = tk.Label(editor, text=nom_site_v[11], width=30, anchor=tk.W)
+    lbl_r_3.grid(row=11, column=0)
+    lbl_q_4 = tk.Label(editor, text=nom_site_v[12], width=30, anchor=tk.W)
+    lbl_q_4.grid(row=12, column=0)
+    lbl_r_4 = tk.Label(editor, text=nom_site_v[13], width=30, anchor=tk.W)
+    lbl_r_4.grid(row=13, column=0)
+    lbl_q_5 = tk.Label(editor, text=nom_site_v[14], width=30, anchor=tk.W)
+    lbl_q_5.grid(row=14, column=0)
+    lbl_r_5 = tk.Label(editor, text=nom_site_v[15], width=30, anchor=tk.W)
+    lbl_r_5.grid(row=15, column=0)
+    lbl_no_te = tk.Label(editor, text=nom_site_v[16], width=30, anchor=tk.W)
     lbl_no_te.grid(row=15, column=0)
-    lbl_delete_editor = tk.Label(editor, text=nom_site_v[16], width=30, anchor=tk.W)
-    lbl_delete_editor.grid(row=16, column=0)
+    # lbl_delete_editor = tk.Label(editor, text=nom_site_v[17][:-34], width=30, anchor=tk.W)
+    # lbl_delete_editor.grid(row=17, column=0)
     query_info = ""
     lbl_non_utili_ed = Label(editor, text=query_info, bg="white")
 
-    for enregisse in choi:  # enregistrements:
+    for enregisse in choi:
         nom_site_editor.insert(0, enregisse[0])
         ur_l_editor.insert(0, enregisse[1])
         nom_utilisateur_editor.insert(0, enregisse[2])
         cour_riel_editor.insert(0, enregisse[3])
         cle_f_editor.insert(0, enregisse[4])
-        q_1_editor.insert(0, enregisse[5])
-        r_1_editor.insert(0, enregisse[6])
-        q_2_editor.insert(0, enregisse[7])
-        r_2_editor.insert(0, enregisse[8])
-        q_3_editor.insert(0, enregisse[9])
-        r_3_editor.insert(0, enregisse[10])
-        q_4_editor.insert(0, enregisse[11])
-        r_4_editor.insert(0, enregisse[12])
-        q_5_editor.insert(0, enregisse[13])
-        r_5_editor.insert(0, enregisse[14])
-        no_te_editor.insert(0, enregisse[15])
-        delete_editor.insert(0, enregisse[16])  # delete_box_txt.get())#record_id)
+        cle_f_deude_editor.insert(0, enregisse[5])
+        q_1_editor.insert(0, enregisse[6])
+        r_1_editor.insert(0, enregisse[7])
+        q_2_editor.insert(0, enregisse[8])
+        r_2_editor.insert(0, enregisse[9])
+        q_3_editor.insert(0, enregisse[10])
+        r_3_editor.insert(0, enregisse[11])
+        q_4_editor.insert(0, enregisse[12])
+        r_4_editor.insert(0, enregisse[13])
+        q_5_editor.insert(0, enregisse[14])
+        r_5_editor.insert(0, enregisse[15])
+        no_te_editor.insert(0, enregisse[16])
+        delete_editor.insert(0, enregisse[17])
         delete_editor.config(state=DISABLED)
 
-    edit_btn = tk.Button(editor, text="Enregistrer ce changement", command=update)
-    edit_btn.grid(row=0, column=2)
+    edit_btn = tk.Button(editor, text="Enregistrer le changement", command=update)
+    edit_btn.grid(row=18, column=1)
 
 
 def update():
-    #     # oid automatique?...:o_i_d,
     if ur_l_editor.get() != "":
         ur_l_editor.config(bg="white")
-        if re.search(r'\w*\.?\w*\.?\w*\.?\w*\.[a-zA-Z]+$', ur_l_editor.get()) and re.search('[^@,]', ur_l_editor.get()):
+        if re.search(r'\w*\.?\w*\.?\w*\.?\w*\.[a-zA-Z]+/?$', ur_l_editor.get()) and re.search('[^@,]', ur_l_editor.get()):
             ur_l_editor.config(bg="white")
-            chapiConnU = sqlite3.connect("sites_chapy.db")
-            c = chapiConnU.cursor()
-            record_id = delete_editor.get()
-            c.execute("""UPDATE sites_oid_chapi SET
-                nom_site = :nom_site,
-                ur_l = :ur_l,
-                nom_utilisateur = :nom_utilisateur,
-                cour_riel = :cour_riel,
-                cle_f = :cle_f,
-                q_1 = :q_1,
-                r_1 = :r_1,
-                q_2 = :q_2,
-                r_2 = :r_2,
-                q_3 = :q_3,
-                r_3 = :r_3,
-                q_4 = :q_4,
-                r_4 = :r_4,
-                q_5 = :q_5,
-                r_5 = :r_5,
-                no_te = :no_te
-        
-                WHERE oid = :oid""",
+            if re.search(r'\w+@\w+\.\w+$', cour_riel_editor.get()) or cour_riel_editor.get() == "":
+                cour_riel_editor.config(bg="white")
+                upate_insert()
+            else:
+                query_info = "Pour soumettre un courriel avec le site, le champ doit comprendre\n" \
+                             " un caractère alpha-numériques ou plus,\n" \
+                             "un \"@\") et un \".\"."
+                placer_lbl_ed(query_info)
+                cour_riel_editor.config(bg="pink")
+        else:
+            query_info = "Pour compléter la modification, assurez-vous que le champ URL comporte au minimum:" \
+                         "\nau moins un caractère alpha-numériques (sauf \"@\")" \
+                         "\nun point \".\"" \
+                         "\nsuivi de caractères alpha-numériques (sauf \"@\")."
+            placer_lbl_ed(query_info)
+    else:
+        editor.destroy()
+
+
+def upate_insert():
+    chapiConnU = sqlite3.connect("sites_chapy.db")
+    c = chapiConnU.cursor()
+    record_id = delete_editor.get()
+    # ce try probablement obsolete....
+    try:
+        c.execute("""UPDATE sites_uniqurl_chapi SET
+                    nom_site = :nom_site,
+                    ur_l = :ur_l,
+                    nom_utilisateur = :nom_utilisateur,
+                    cour_riel = :cour_riel,
+                    cle_f = :cle_f,
+                    cle_f_deude = :cle_f_deude,
+                    q_1 = :q_1,
+                    r_1 = :r_1,
+                    q_2 = :q_2,
+                    r_2 = :r_2,
+                    q_3 = :q_3,
+                    r_3 = :r_3,
+                    q_4 = :q_4,
+                    r_4 = :r_4,
+                    q_5 = :q_5,
+                    r_5 = :r_5,
+                    no_te = :no_te
+            
+                    WHERE oid = :oid""",
                   {
                       'nom_site': nom_site_editor.get(),
                       'ur_l': ur_l_editor.get(),
                       'nom_utilisateur': nom_utilisateur_editor.get(),
                       'cour_riel': cour_riel_editor.get(),
                       'cle_f': cle_f_editor.get(),
+                      'cle_f_deude': cle_f_deude_editor.get(),
                       'q_1': q_1_editor.get(),
                       'r_1': r_1_editor.get(),
                       'q_2': q_2_editor.get(),
@@ -456,25 +499,23 @@ def update():
                       'r_4': r_4_editor.get(),
                       'q_5': q_5_editor.get(),
                       'r_5': r_5_editor.get(),
-                      'no_te': no_te_editor.get(),
+                      'no_te': no_te_editor.get() + "\nModification faite le " + time.strftime("%d-%m-%Y") + "\n" + no_te_txt.get(),
                       'oid': record_id
                   })
-            c.close()
-            chapiConnU.commit()
-            chapiConnU.close()  # <------prendre une chance
-            query_info = "Modification {} complété".format(ur_l_editor.get())
-            placer_lbl(query_info)
-            editor.destroy()
-        else:
-            query_info = "Pour compléter la modification, assurez-vous que le champ URL comporte au minimum:" \
-                         "\nau moins un caractère alpha-numériques (sauf \"@\")" \
-                         "\nun point \".\"" \
-                         "\nsuivi de caractères alpha-numériques (sauf \"@\")."
-            placer_lbl_ed(query_info)
-
-    else:
+        chapiConnU.commit()
+        query_info = "Modification {} complétée".format(ur_l_editor.get())
+        placer_lbl(query_info)
         editor.destroy()
+    except sqlite3.Error as sqerr:
+        errMess = "La valeur entrée dans l\'un des champs \"Nom du site\" ou \"URL\"" \
+                  "\nexiste déjà, elle doit être modifiée." \
+                  "\nPour consulter les valeurs existantes, cliquez sur \"Recherche\" de la page principale"
+        placer_lbl(errMess)
+        nom_site_editor.config(bg="pink")
+        ur_l_editor.config(bg="pink")
 
+    c.close()
+    chapiConn.close()
 
 def vider_champs():
     nom_site_txt.delete(0, tk.END)
@@ -487,6 +528,8 @@ def vider_champs():
     cour_riel_txt.config(bg="white")
     cle_f_txt.delete(0, tk.END)
     cle_f_txt.config(bg="white")
+    cle_f_deude_txt.delete(0, tk.END)
+    cle_f_deude_txt.config(bg="white")
     q_1_txt.delete(0, tk.END)
     q_1_txt.config(bg="white")
     r_1_txt.delete(0, tk.END)
@@ -511,23 +554,16 @@ def vider_champs():
     no_te_txt.config(bg="White")
     delete_box_txt.delete(0, END)
     delete_box_txt.config(bg="White")
-# def info_champs_vides():
-#     ch_vid = [nom_site_txt, nom_utilisateur_txt, cle_f_txt, q_1_txt, r_2_txt, q_2_txt, r_2_txt, q_3_txt, r_3_txt,
-#               q_4_txt, r_4_txt, q_5_txt, r_5_txt, no_te_txt]
-#     # poir la version 1.2...
-#     # info_v_c = str([i for i in ch_vid if i.get() == ""])
-#     for i in ch_vid:
-#         if i.get() == "":
-#             query_info_v_c = "Si " + str(i)[:-4] + "_lbl ou plus de champs restent vides, l'opération est tout de même complétée avec succès"
-#             break
-#             placer_lbl(query_info_v_c)
-# big shot sans ruban deroulant...			...pro chaine etape	<---------
+
 def query():
     global tex_recherche
     tex_recherche = ""
     if ur_l_txt.get() != "":
         query_selon_champ("ur_l", ur_l_txt.get())
+        urelle = ur_l_txt.get()
         vider_champs()
+        ur_l_txt.insert(0, urelle)
+        #marche pas... voir 1.3
     elif cour_riel_txt.get() != "":
         query_selon_champ("cour_riel", cour_riel_txt.get())
         vider_champs()
@@ -537,12 +573,11 @@ def query():
     else:
         query_poin_all()
 
-
 def query_poin_all():
     # global tex_recherche
     chapiConn = sqlite3.connect("sites_chapy.db")
     c = chapiConn.cursor()
-    c.execute("SELECT *, oid FROM sites_oid_chapi")
+    c.execute("SELECT *, oid FROM sites_uniqurl_chapi")
     cee_fetch = c.fetchall()
     cee = ''
     for rowe in cee_fetch:
@@ -553,45 +588,44 @@ def query_poin_all():
             cee += "Nom d\'utilisateur : " + rowe[2] + "\n"
         cee += "Courriel : " + rowe[3] + "\n"
         if rowe[4]:
-            cee += "Clef : " + rowe[4] + "\n"
+            cee += "Clef : " + rowe[4] + "\t"
         if rowe[5]:
-            cee += rowe[5] + "\n"
+            cee += "Seconde clef : " + rowe[5] + "\n"
         if rowe[6]:
-            cee += rowe[6]
+            cee += rowe[6] + "\n"
         if rowe[7]:
-            cee += rowe[7] + "\n"
+            cee += rowe[7]
         if rowe[8]:
-            cee += rowe[8]
+            cee += rowe[8] + "\n"
         if rowe[9]:
-            cee += rowe[9] + "\n"
+            cee += rowe[9]
         if rowe[10]:
-            cee += rowe[10]
+            cee += rowe[10] + "\n"
         if rowe[11]:
-            cee += rowe[11] + "\n"
+            cee += rowe[11]
         if rowe[12]:
-            cee += rowe[12]
+            cee += rowe[12] + "\n"
         if rowe[13]:
-            cee += rowe[13] + "\n"
+            cee += rowe[13]
         if rowe[14]:
-            cee += rowe[14]
+            cee += rowe[14] + "\n"
         if rowe[15]:
-            cee += rowe[15] + "\n"
-        cee += "Clé primaire : " + str(rowe[16])
-        cee += "\n///\\\\\\\n"
-    # for choi in range(len(cee_fetch)):
-    #     cee += "Gooooo" + "\n"
+            cee += rowe[15]
+            if rowe[16]:
+                cee += rowe[16] + "\n"
+        cee += "Clé primaire : " + str(rowe[17])
+        cee += "\n\t- - - -\n"
     tex_recherche = "Tous les sites :\n" + cee
 
     show_recherche(tex_recherche)  # , cee_fetch)
     chapiConn.commit()
     chapiConn.close()
 
-
 def query_selon_champ(information, info_txt):
     # global tex_recherche
     chapiConn = sqlite3.connect("sites_chapy.db")
     c = chapiConn.cursor()
-    c.execute("SELECT * , oid FROM sites_oid_chapi WHERE " + information + " LIKE '%" + info_txt + "%'")
+    c.execute("SELECT * , oid FROM sites_uniqurl_chapi WHERE " + information + " LIKE '%" + info_txt + "%'")
     cee_fetch = c.fetchall()
     cee = ''
     for rowe in cee_fetch:
@@ -604,85 +638,84 @@ def query_selon_champ(information, info_txt):
         if rowe[4]:
             cee += "Clef :\t" + rowe[4] + "\n"
         if rowe[5]:
-            cee += "Question :\t" + rowe[5] + "\n"
+            cee + "\tClef secondaire :\t" + rowe[5] + "\n"
         if rowe[6]:
-            cee += "Réponse :\t" + rowe[6] + "\n"
+            cee += "Question :\t" + rowe[6] + "\n"
         if rowe[7]:
-            cee += "Question :\t" + rowe[7] + "\n"
+            cee += "Réponse :\t" + rowe[7] + "\n"
         if rowe[8]:
-            cee += "Réponse :\t" + rowe[8] + "\n"
+            cee += "Question :\t" + rowe[8] + "\n"
         if rowe[9]:
-            cee += "Question:\t" + rowe[9] + "\n"
+            cee += "Réponse :\t" + rowe[9] + "\n"
         if rowe[10]:
-            cee += "Réponse :\t" + rowe[10] + "\n"
+            cee += "Question:\t" + rowe[10] + "\n"
         if rowe[11]:
-            cee += "Question :\t" + rowe[11] + "\n"
+            cee += "Réponse :\t" + rowe[11] + "\n"
         if rowe[12]:
-            cee += "Réponse :\t" + rowe[12] + "\n"
+            cee += "Question :\t" + rowe[12] + "\n"
         if rowe[13]:
-            cee += "Question :\t" + rowe[13] + "\n"
+            cee += "Réponse :\t" + rowe[13] + "\n"
         if rowe[14]:
-            cee += "Réponse\t" + rowe[14] + "\n"
+            cee += "Question :\t" + rowe[14] + "\n"
         if rowe[15]:
-            cee += "Note :\t" + rowe[15] + "\n\n"
-        cee += "Clé primaire : " + str(rowe[16])
-        cee += "\n///\\\\\\\n"
-    # for choi in range(len(cee_fetch)):
-    #     cee += "Gooooo" + "\n"
-    tex_recherche = "Selon les lettres clef :\n\n" + cee
+            cee += "Réponse\t" + rowe[15] + "\n"
+        if rowe[16]:
+            cee += "Note :\t" + rowe[16] + "\n\n"
+        cee += "Clé primaire : " + str(rowe[17])
+        cee += "\n\t- - - -\n"
+    tex_recherche = "Selon les lettres clef :\n" + cee
 
-    show_recherche(tex_recherche)  # , cee_fetch)
+    show_recherche(tex_recherche)
     chapiConn.commit()
     chapiConn.close()
 
-
 def show_recherche(texx_rech):  # , c_fetche):
-    montrer_clef = tkst.ScrolledText(root, undo=TRUE, width=70, height=10)
+    montrer_clef = tkst.ScrolledText(root, undo=TRUE, width=70, height=20)
     montrer_clef.grid_forget()
     montrer_clef['font'] = ('Times', 9)
-    montrer_clef.grid(row=0, column=2, rowspan=5, columnspan=2, padx=10, pady=(14, 0))
+    montrer_clef.grid(row=0, column=4, rowspan=8, pady=3)
     montrer_clef.insert(END, texx_rech)
-
 
 def archivedonc():
     chapiConn = sqlite3.connect("sites_chapy.db")
     c = chapiConn.cursor()
-    if ur_l_txt.get() == "":
-        archiv_info = "Aucun enregistrement n\'a été sélectionné dans le champ \"URL\"," \
-                      "\nrien ne sera transféré à l\'archivage"
+    if ur_l_txt.get() == "" and delete_box_txt.get() == "":
+        archiv_info = "Aucun enregistrement n\'a été sélectionné " \
+                      "\ndans le champ \"URL\"," \
+                      "\nni dans le champ \"Clé primaire\"." \
+                      "\naucun élément ne sera transféré à l\'archivage."
         placer_lbl(archiv_info)
-    elif delete_box_txt.get() == "":
-        archiv_info = "Aucun enregistrement n\'a été sélectionné dans le champ \"Clé\"," \
-                      "\nrien ne sera transféré à l\'archivage." \
-                      "\nLes références aux clés se trouvent selon le bouton recherche"
-        placer_lbl(archiv_info)
+        vider_champs()
+    elif ur_l_txt.get() != "":
+        c.execute("SELECT * FROM sites_uniqurl_chapi WHERE ur_l = '" + ur_l_txt.get() + "'")
+        archiv_sel = c.fetchall()
+        ur_l_get = ur_l_txt.get()
+        if (any(ur_l_get in i for i in archiv_sel)):
+            archivStr = str(archiv_sel) + "\n"
+            with open('archiv_chapy.txt', 'a') as traite:
+                traite.write(archivStr)
+                c.execute("DELETE FROM sites_uniqurl_chapi WHERE ur_l = '" + ur_l_txt.get() + "'")  # cger delete_box_txt par recherche precise
+                placer_lbl("Les données du document\n" + ur_l_txt.get() + "\nont été archivé dans le fichier \"archiv_Chapy.txt\"")
+                vider_champs()
+    elif delete_box_txt.get() != "":
+        c.execute("SELECT * FROM sites_uniqurl_chapi WHERE oid = " + delete_box_txt.get())
+        archiv_sel = c.fetchall()
+        delete_get = ur_l_txt.get()
+        if (any(delete_get in i for i in archiv_sel)):
+            archivStr = str(archiv_sel) + "\n"
+            with open('archiv_chapy.txt', 'a') as traite:
+                traite.write(archivStr)
+                c.execute("DELETE FROM sites_uniqurl_chapi WHERE oid = " + delete_box_txt.get())  # cger delete_box_txt par recherche precise
+                placer_lbl("Les données du document\n" + delete_box_txt.get() + "\nont été archivé dans le fichier \"archiv_Chapy.txt\"")
+                vider_champs()
     else:
-        record_id = delete_box_txt.get()
-        if delete_box_txt.get():
-            c.execute("SELECT * FROM sites_oid_chapi WHERE oid = " + record_id)
-        elif ur_l_txt.get():
-            c.execute("SELECT * FROM sites_oid_chapi WHERE ur_l = " + ur_l_txt.get())
-        # See = c.fetchall()
-        with open('archiv_chapy.txt', 'a', encoding='utf-8') as archivChapi:
-            cc = chapiConn.cursor()
-            cc.execute("SELECT * FROM sites_oid_chapi WHERE oid = " + record_id)
-            archivSelect = cc.fetchall()
-            archivStr = str(archivSelect) + "\n"
-            archivChapi.write(archivStr)
-        c.execute("DELETE FROM sites_oid_chapi WHERE oid = " + record_id)  # cger delete_box_txt par recherche precise
-
-        placer_lbl("Les données du document\n" + record_id + "\nont été archivé dans le document archivChapie.txt")
         vider_champs()
     chapiConn.commit()
     chapiConn.close()
-
-
-# <!--lbl et Entry, etc.---!>
 nom_site_v = ["Nom du site : ", "URL (Recherche ou Ajout) : ", "Nom d'utilisateur : ", "Courriel utilisé (Recherche): ",
-              "Clef : ",
-              "Question 1 : ", "Réponse (1) : ", "Question 2 : ", "Réponse (2) : ", "Question 3 : ", "Réponse (3) : ",
+              "Clef : ", "Une seconde clef", "Question 1 : ", "Réponse (1) : ", "Question 2 : ", "Réponse (2) : ", "Question 3 : ", "Réponse (3) : ",
               "Question 4 : ", "Réponse (4) : ", "Question 5 : ", "Réponse (5) : ", "Note : ",
-              "Clé primaire\n( pour mise à jour ou suppression)"]
+              "Clé primaire\n(pour suppression)"]
 nom_site_color = "white"
 
 nom_site_lbl = tk.Label(root, text=nom_site_v[0], width=22, anchor=tk.W)
@@ -691,7 +724,7 @@ nom_site_tkstring = tk.StringVar()
 nom_site_lbl.config(bg=nom_site_color)
 # nom_site_tkstring = ""
 nom_site_txt = tk.Entry(root, textvariable=nom_site_tkstring, width=60, bg=nom_site_color)
-nom_site_txt.grid(row=0, column=1, padx=10, pady=10)
+nom_site_txt.grid(row=0, column=1)#, padx=10, pady=10)
 
 ur_l_lbl = tk.Label(root, text=nom_site_v[1], width=22, anchor=tk.W)
 ur_l_lbl.grid(row=1, column=0, padx=10, pady=10)
@@ -719,99 +752,93 @@ cle_f_lbl.config(bg=nom_site_color)
 cle_f_txt = tk.Entry(root, width=60)
 cle_f_txt.grid(row=4, column=1, padx=10, pady=10)
 
-q_1_lbl = tk.Label(root, text=nom_site_v[5], width=22, anchor=tk.W)
+
+cle_f_deude_lbl = tk.Label(root, text=nom_site_v[5], width=22, anchor=tk.W)
+cle_f_deude_lbl.grid(row=4, column=2, padx=10, pady=10)
+cle_f_deude_lbl.config(bg=nom_site_color)
+cle_f_deude_txt = tk.Entry(root, width=60)
+cle_f_deude_txt.grid(row=4, column=3, padx=10, pady=10)
+
+q_1_lbl = tk.Label(root, text=nom_site_v[6], width=22, anchor=tk.W)
 q_1_lbl.grid(row=5, column=0, padx=10, pady=10)
 q_1_lbl.config(bg=nom_site_color)
 q_1_txt = tk.Entry(root, width=60)
 q_1_txt.grid(row=5, column=1, padx=10, pady=10)
 
-r_1_lbl = tk.Label(root, text=nom_site_v[6], width=22, anchor=tk.W)
+r_1_lbl = tk.Label(root, text=nom_site_v[7], width=22, anchor=tk.W)
 r_1_lbl.grid(row=5, column=2, padx=10, pady=10)
 r_1_lbl.config(bg=nom_site_color)
 r_1_txt = tk.Entry(root, width=60)
 r_1_txt.grid(row=5, column=3, padx=10, pady=10)
 
-q_2_lbl = tk.Label(root, text=nom_site_v[7], width=22, anchor=tk.W)
+q_2_lbl = tk.Label(root, text=nom_site_v[8], width=22, anchor=tk.W)
 q_2_lbl.grid(row=6, column=0, padx=10, pady=10)
 q_2_lbl.config(bg=nom_site_color)
 q_2_txt = tk.Entry(root, width=60)
 q_2_txt.grid(row=6, column=1, padx=10, pady=10)
 
-r_2_lbl = tk.Label(root, text=nom_site_v[8], width=22, anchor=tk.W)
+r_2_lbl = tk.Label(root, text=nom_site_v[9], width=22, anchor=tk.W)
 r_2_lbl.grid(row=6, column=2, padx=10, pady=10)
 r_2_lbl.config(bg=nom_site_color)
 r_2_txt = tk.Entry(root, width=60)
 r_2_txt.grid(row=6, column=3, padx=10, pady=10)
 
-q_3_lbl = tk.Label(root, text=nom_site_v[9], width=22, anchor=tk.W)
+q_3_lbl = tk.Label(root, text=nom_site_v[10], width=22, anchor=tk.W)
 q_3_lbl.grid(row=7, column=0, padx=10, pady=10)
 q_3_lbl.config(bg=nom_site_color)
 q_3_txt = tk.Entry(root, width=60)
 q_3_txt.grid(row=7, column=1, padx=10, pady=10)
 
-r_3_lbl = tk.Label(root, text=nom_site_v[10], width=22, anchor=tk.W)
+r_3_lbl = tk.Label(root, text=nom_site_v[11], width=22, anchor=tk.W)
 r_3_lbl.grid(row=7, column=2, padx=10, pady=10)
 r_3_lbl.config(bg=nom_site_color)
 r_3_txt = tk.Entry(root, width=60)
 r_3_txt.grid(row=7, column=3, padx=10, pady=10)
 
-q_4_lbl = tk.Label(root, text=nom_site_v[11], width=22, anchor=tk.W)
+q_4_lbl = tk.Label(root, text=nom_site_v[12], width=22, anchor=tk.W)
 q_4_lbl.grid(row=8, column=0, padx=10, pady=10)
 q_4_lbl.config(bg=nom_site_color)
 q_4_txt = tk.Entry(root, width=60)
 q_4_txt.grid(row=8, column=1, padx=10, pady=10)
 
-r_4_lbl = tk.Label(root, text=nom_site_v[12], width=22, anchor=tk.W)
+r_4_lbl = tk.Label(root, text=nom_site_v[13], width=22, anchor=tk.W)
 r_4_lbl.grid(row=8, column=2, padx=10, pady=10)
 r_4_lbl.config(bg=nom_site_color)
 r_4_txt = tk.Entry(root, width=60)
 r_4_txt.grid(row=8, column=3, padx=10, pady=10)
 
-q_5_lbl = tk.Label(root, text=nom_site_v[13], width=22, anchor=tk.W)
+q_5_lbl = tk.Label(root, text=nom_site_v[14], width=22, anchor=tk.W)
 q_5_lbl.grid(row=9, column=0, padx=10, pady=10)
 q_5_lbl.config(bg=nom_site_color)
 q_5_txt = tk.Entry(root, width=60)
 q_5_txt.grid(row=9, column=1, padx=10, pady=10)
 
-r_5_lbl = tk.Label(root, text=nom_site_v[14], width=22, anchor=tk.W)
+r_5_lbl = tk.Label(root, text=nom_site_v[15], width=22, anchor=tk.W)
 r_5_lbl.grid(row=9, column=2, padx=10, pady=10)
 r_5_lbl.config(bg=nom_site_color)
 r_5_txt = tk.Entry(root, width=60)
 r_5_txt.grid(row=9, column=3, padx=10, pady=10)
 
-no_te_lbl = tk.Label(root, text=nom_site_v[15], width=22, anchor=tk.W)
+no_te_lbl = tk.Label(root, text=nom_site_v[16], width=22, anchor=tk.W)
 no_te_lbl.grid(row=10, column=0, pady=(10, 0))
 no_te_lbl.config(bg="white")
 no_te_txt = tk.Entry(root, width=60)
 no_te_txt.grid(row=10, column=1, pady=(10, 0))
 
-delete_lbl = tk.Label(root, text=nom_site_v[16], width=30, anchor=tk.W)
-delete_lbl.grid(row=10, column=2, rowspan=2, pady=(10, 0))
+delete_lbl = tk.Label(root, text=nom_site_v[17], width=30, anchor=tk.W)
+delete_lbl.grid(row=0, column=2)
 delete_lbl.config(bg="pink")
 delete_box_txt = tk.Entry(root, width=60)
-delete_box_txt.grid(row=10, column=3, pady=(10, 0))
+delete_box_txt.grid(row=0, column=3)
 
-# -------->validation youppi<-------------------------------
-# def only_members(S):
-#     if S.isdigit():
-#         return TRUE
-#     return FALSE
-# delete_box_lbl = tk.Label(root, text="Pour une investigation... :", width=30, anchor=tk.W).grid(row=11, column=0, pady=(10, 0))
-# valider_cmd = (root.register(only_members), '%S')                 <----utilie*******
-# delete_box_txt = tk.Entry(root, validate="key", vcmd=valider_cmd, width=50)
-# delete_box_txt.grid(row=11, column=1, pady=(10, 0))
-# -------->validation youppi<-------------------------------
-# valider_cmd = (root.register(only_members), '%S')                 <----utilie*******
 
 kit_btn = tk.Frame(root, width=20, height=10)
 kit_btn.grid(row=18, column=0, pady=5)
 
 submit_cmd = tk.Button(kit_btn, text="Ajouter aux sites", command=submit, height=1, width=20).grid(row=12, column=0)
-#                       -------------> changera par menu déroulant <---------
 query_cmd = tk.Button(kit_btn, text="Recherche", command=query, width=20, height=1).grid(row=13, column=0)
 
-#           ----> sera agrémenté d'une fonction d'archive <----------
-del_cmd = tk.Button(kit_btn, text="Archiver", command=archivedonc, width=20, height=1).grid(row=14, column=0)
+del_cmd = tk.Button(kit_btn, text="Effacer/Archiver", command=archivedonc, width=20, height=1).grid(row=14, column=0)
 maj_cmd = tk.Button(kit_btn, text="Mise à jour", command=edit, width=20, height=1).grid(row=15, column=0)
 query_lst = tk.Label(root, text=query_info, bg="white")  # textvariable=queri_info, bg="white")
 query_info = "Commencez une recherche ou inscrivez un nouveau site\n" \
@@ -819,15 +846,6 @@ query_info = "Commencez une recherche ou inscrivez un nouveau site\n" \
 lbl_non_utili = Label(root, text=query_info, bg="white")
 placer_lbl(query_info)
 
-# def lbelle():
-#     chapiConn = sqlite3.connect("sites_chapy.db")
-#     c = chapiConn.cursor()
-#     c.fetchall()
-#     compte_chapi = tk.StringVar()
-#     compte_chapi = c.execute("SELECT COUNT() FROM sites_oid_chapi")
-#
-#     chapiConn.commit()
-#     chapiConn.close()
 chapiConn.commit()
 chapiConn.close()
 
