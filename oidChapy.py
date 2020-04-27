@@ -691,9 +691,13 @@ def archivedonc():
         archiv_sel = c.fetchall()
         ur_l_get = ur_l_txt.get()
         if (any(ur_l_get in i for i in archiv_sel)):
-            archivStr = str(archiv_sel) + "\n"
-            with open('archiv_chapy.txt', 'a') as traite:
-                traite.write(archivStr)
+            archivPourDelet = archiv_sel[0]
+            with open("archiv_chapy.csv", "a") as archiver:
+                for elem in archivPourDelet:
+                        archiver.write(elem + ",")
+            # archivStr = str(archiv_sel) + "\n"
+            # with open('archiv_chapy.txt', 'a') as traite:
+            #     traite.write(archivStr)
                 c.execute("DELETE FROM sites_uniqurl_chapi WHERE ur_l = '" + ur_l_txt.get() + "'")  # cger delete_box_txt par recherche precise
                 placer_lbl("Les données du document\n" + ur_l_txt.get() + "\nont été archivé dans le fichier \"archiv_Chapy.txt\"")
                 vider_champs()
