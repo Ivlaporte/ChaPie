@@ -1,10 +1,11 @@
 # 19 avril 2020: debugger Ajouter
 # oidChapie
 # application python qui gè le CRUD des clefs de l'usager
-#
+# English version available soon...
 # Créé le: 14 mars 2020
-# Chapy 1.2
+# Chapy 1.2.1
 # Révisé le: 22 avril 2020
+# Commentaires le 7 mai 2020
 
 import tkinter as tk
 from tkinter import *
@@ -81,6 +82,7 @@ def fenet_aid_fr():
     canvas.pack(side="left", fill="both", expand=True)
     scrollebar.pack(side="right", fill="y")
     fenetaid.mainloop()
+# Creation of a table in the database "if it doesn't exists"
 chapiConn = sqlite3.connect("sites_chapy.db")
 c = chapiConn.cursor()
 c.execute("""CREATE TABLE IF NOT EXISTS sites_uniqurl_chapi(
@@ -108,6 +110,7 @@ chapiConn.close()
 
 
 def variab_nom(var_nom, ntabl):
+    #to write the user's name in the window (to be used in next version)
     if var_nom == "":
         ntabl.destroy()
     else:
@@ -122,6 +125,7 @@ def prendrelenomparlapoinpoin():
     global txt_n_utili
     n_utili = tk.StringVar()
 
+    #validates txt_n_utili entry to be able to write only letters, dash, point or spaces
     def only_members(ese):
         if re.search(r'[\w\-. ]', ese):
             return TRUE
@@ -150,6 +154,7 @@ def prendrelenomparlapoinpoin():
 
 
 def placer_lbl(queri_info):
+    #intormation label will be shown in only when this function is called
     lbl_non_utili.config(text=queri_info, justify=LEFT)
     # root.geometry("1200x570")
     lbl_non_utili.grid(row=18, column=1, columnspan=4, sticky=W + E)
@@ -167,10 +172,12 @@ def comand_quitter():
     quiter_peutetre.title("")
     quiter_peutetre.config(bg="lightpink")
     quiter_peutetre.geometry("450x90")
-
+    #when button "quitter" is pressed
     def go_quit():
         quiter_peutetre.destroy()
         root.destroy()
+
+    # when button "annuler" is pressed
     def go_annuler():
         quiter_peutetre.destroy()
 
@@ -341,31 +348,31 @@ def batir_editTk(choi):  # choi = fetchall!!!
     cle_f_editor = tk.Entry(editor, width=50)
     cle_f_editor.grid(row=4, column=1)
     cle_f_deude_editor = tk.Entry(editor, width=50)
-    cle_f_deude_editor.grid(row=4, column=1)
+    cle_f_deude_editor.grid(row=5, column=1)
     q_1_editor = tk.Entry(editor, width=50)
-    q_1_editor.grid(row=5, column=1)
+    q_1_editor.grid(row=6, column=1)
     r_1_editor = tk.Entry(editor, width=50)
-    r_1_editor.grid(row=6, column=1)
+    r_1_editor.grid(row=7, column=1)
     q_2_editor = tk.Entry(editor, width=50)
-    q_2_editor.grid(row=7, column=1)
+    q_2_editor.grid(row=8, column=1)
     r_2_editor = tk.Entry(editor, width=50)
-    r_2_editor.grid(row=8, column=1)
+    r_2_editor.grid(row=9, column=1)
     q_3_editor = tk.Entry(editor, width=50)
-    q_3_editor.grid(row=9, column=1)
+    q_3_editor.grid(row=10, column=1)
     r_3_editor = tk.Entry(editor, width=50)
-    r_3_editor.grid(row=10, column=1)
+    r_3_editor.grid(row=11, column=1)
     q_4_editor = tk.Entry(editor, width=50)
-    q_4_editor.grid(row=11, column=1)
+    q_4_editor.grid(row=12, column=1)
     r_4_editor = tk.Entry(editor, width=50)
-    r_4_editor.grid(row=12, column=1)
+    r_4_editor.grid(row=13, column=1)
     q_5_editor = tk.Entry(editor, width=50)
-    q_5_editor.grid(row=13, column=1)
+    q_5_editor.grid(row=14, column=1)
     r_5_editor = tk.Entry(editor, width=50)
-    r_5_editor.grid(row=14, column=1)
+    r_5_editor.grid(row=15, column=1)
     no_te_editor = tk.Entry(editor, width=50)
-    no_te_editor.grid(row=15, column=1)
+    no_te_editor.grid(row=16, column=1)
     delete_editor = tk.Entry(editor, width=50)
-    delete_editor.grid(row=16, column=1)
+    delete_editor.grid(row=17, column=1)
 
     lbl_nom_site = tk.Label(editor, text=nom_site_v[0], width=30, anchor=tk.W)
     lbl_nom_site.grid(row=0, column=0)
@@ -401,7 +408,7 @@ def batir_editTk(choi):  # choi = fetchall!!!
     lbl_r_5 = tk.Label(editor, text=nom_site_v[15], width=30, anchor=tk.W)
     lbl_r_5.grid(row=15, column=0)
     lbl_no_te = tk.Label(editor, text=nom_site_v[16], width=30, anchor=tk.W)
-    lbl_no_te.grid(row=15, column=0)
+    lbl_no_te.grid(row=16, column=0)
     # lbl_delete_editor = tk.Label(editor, text=nom_site_v[17][:-34], width=30, anchor=tk.W)
     # lbl_delete_editor.grid(row=17, column=0)
     query_info = ""
@@ -610,7 +617,7 @@ def query_poin_all():
         if rowe[14]:
             cee += rowe[14] + "\n"
         if rowe[15]:
-            cee += rowe[15]
+            cee += rowe[15] + "\n"
             if rowe[16]:
                 cee += rowe[16] + "\n"
         cee += "Clé primaire : " + str(rowe[17])
